@@ -1,0 +1,167 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Calendar Helper",
+        "description": "Configure Calendar Helper to add action support for deleting local calendar events.",
+        "data": {
+          "register_calendar_services": "Also register actions under calendar.* domain (e.g. calendar.delete_event)"
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Only one instance of Calendar Helper is required."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Calendar Helper Options",
+        "description": "Configure settings for Calendar Helper.",
+        "data": {
+          "register_calendar_services": "Also register actions under calendar.* domain (e.g. calendar.delete_event)"
+        }
+      }
+    }
+  },
+  "services": {
+    "delete_event": {
+      "name": "Delete Event",
+      "description": "Delete a specific event from a local calendar by its UID or summary and time range.",
+      "fields": {
+        "uid": {
+          "name": "Event UID",
+          "description": "The unique identifier of the calendar event to delete."
+        },
+        "summary": {
+          "name": "Summary / Title",
+          "description": "The summary or title of the event to delete (used if UID is not provided)."
+        },
+        "summary_match_mode": {
+          "name": "Summary Match Mode",
+          "description": "How to match the summary against calendar events."
+        },
+        "recurrence_id": {
+          "name": "Recurrence ID",
+          "description": "The recurrence ID if targeting a specific instance of a recurring event."
+        },
+        "recurrence_range": {
+          "name": "Recurrence Range",
+          "description": "Range of recurring events to delete."
+        },
+        "start_date_time": {
+          "name": "Search Start Datetime",
+          "description": "Start of time range to search for the event (if matching by summary)."
+        },
+        "end_date_time": {
+          "name": "Search End Datetime",
+          "description": "End of time range to search for the event (if matching by summary)."
+        },
+        "start_date": {
+          "name": "Search Start Date",
+          "description": "Start date to search for all-day events."
+        },
+        "end_date": {
+          "name": "Search End Date",
+          "description": "End date to search for all-day events."
+        }
+      }
+    },
+    "delete_events": {
+      "name": "Delete Events",
+      "description": "Delete multiple events from a local calendar based on summary, description, location, or list of UIDs.",
+      "fields": {
+        "uids": {
+          "name": "List of UIDs",
+          "description": "Optional list of event UIDs to delete."
+        },
+        "summary": {
+          "name": "Summary Filter",
+          "description": "Filter events matching this summary."
+        },
+        "summary_match_mode": {
+          "name": "Summary Match Mode",
+          "description": "How to match the summary."
+        },
+        "description": {
+          "name": "Description Filter",
+          "description": "Filter events whose description contains this text."
+        },
+        "location": {
+          "name": "Location Filter",
+          "description": "Filter events whose location contains this text."
+        },
+        "start_date_time": {
+          "name": "Start Datetime",
+          "description": "Search window start time (defaults to 30 days ago)."
+        },
+        "end_date_time": {
+          "name": "End Datetime",
+          "description": "Search window end time (defaults to 365 days ahead)."
+        },
+        "start_date": {
+          "name": "Start Date",
+          "description": "Search window start date."
+        },
+        "end_date": {
+          "name": "End Date",
+          "description": "Search window end date."
+        },
+        "all_time": {
+          "name": "Search All Time",
+          "description": "Search the entire calendar timeline (1970 to 2099)."
+        },
+        "limit": {
+          "name": "Limit",
+          "description": "Maximum number of events to delete."
+        },
+        "delete_all": {
+          "name": "Delete All (Safety Override)",
+          "description": "Must be set to true if deleting events without providing any filters."
+        },
+        "dry_run": {
+          "name": "Dry Run",
+          "description": "If enabled, returns the events that would be deleted without actually deleting them."
+        }
+      }
+    },
+    "clear_calendar": {
+      "name": "Clear Calendar",
+      "description": "Bulk remove all events, past events, or future events from a local calendar.",
+      "fields": {
+        "confirm": {
+          "name": "Confirm Action",
+          "description": "Safety confirmation. Must be checked (true) to execute the deletion."
+        },
+        "start_date_time": {
+          "name": "Start Datetime",
+          "description": "Earliest event start to clear."
+        },
+        "end_date_time": {
+          "name": "End Datetime",
+          "description": "Latest event start to clear."
+        },
+        "start_date": {
+          "name": "Start Date",
+          "description": "Earliest date to clear."
+        },
+        "end_date": {
+          "name": "End Date",
+          "description": "Latest date to clear."
+        },
+        "only_past": {
+          "name": "Clear Only Past Events",
+          "description": "Clear only events that have already ended prior to now."
+        },
+        "only_future": {
+          "name": "Clear Only Future Events",
+          "description": "Clear only events that start in the future after now."
+        },
+        "dry_run": {
+          "name": "Dry Run",
+          "description": "If enabled, lists the events that would be cleared without modifying the calendar."
+        }
+      }
+    }
+  }
+}

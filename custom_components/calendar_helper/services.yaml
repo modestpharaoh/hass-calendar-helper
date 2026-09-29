@@ -1,0 +1,224 @@
+delete_event:
+  name: Delete Event
+  description: Delete a specific event from a local calendar by its UID or summary and time range.
+  target:
+    entity:
+      domain: calendar
+  fields:
+    uid:
+      name: Event UID
+      description: The unique identifier of the calendar event to delete.
+      example: "3df1459a-1c52-4e08-9df8-0123456789ab"
+      selector:
+        text:
+    summary:
+      name: Summary / Title
+      description: The summary or title of the event to delete (used if UID is not provided).
+      example: "Doctor Appointment"
+      selector:
+        text:
+    summary_match_mode:
+      name: Summary Match Mode
+      description: How to match the summary against calendar events.
+      default: "exact"
+      selector:
+        select:
+          options:
+            - label: "Exact (case-insensitive)"
+              value: "exact"
+            - label: "Exact (case-sensitive)"
+              value: "exact_case_sensitive"
+            - label: "Contains (case-insensitive substring)"
+              value: "contains"
+            - label: "Starts with"
+              value: "startswith"
+            - label: "Ends with"
+              value: "endswith"
+            - label: "Regular Expression"
+              value: "regex"
+    recurrence_id:
+      name: Recurrence ID
+      description: The recurrence ID if targeting a specific instance of a recurring event.
+      example: "20261015T090000Z"
+      selector:
+        text:
+    recurrence_range:
+      name: Recurrence Range
+      description: Range of recurring events to delete.
+      selector:
+        select:
+          options:
+            - label: "This and future instances"
+              value: "THIS_AND_FUTURE"
+            - label: "Only this instance"
+              value: "NONE"
+    start_date_time:
+      name: Search Start Datetime
+      description: Start of time range to search for the event (if matching by summary).
+      selector:
+        datetime:
+    end_date_time:
+      name: Search End Datetime
+      description: End of time range to search for the event (if matching by summary).
+      selector:
+        datetime:
+    start_date:
+      name: Search Start Date
+      description: Start date to search for all-day events.
+      selector:
+        date:
+    end_date:
+      name: Search End Date
+      description: End date to search for all-day events.
+      selector:
+        date:
+
+delete_events:
+  name: Delete Events
+  description: Delete multiple events from a local calendar based on summary, description, location, or list of UIDs.
+  target:
+    entity:
+      domain: calendar
+  fields:
+    uids:
+      name: List of UIDs
+      description: Optional list of event UIDs to delete.
+      example: ["event-uid-1", "event-uid-2"]
+      selector:
+        object:
+    summary:
+      name: Summary Filter
+      description: Filter events matching this summary.
+      example: "Recycling"
+      selector:
+        text:
+    summary_match_mode:
+      name: Summary Match Mode
+      description: How to match the summary.
+      default: "exact"
+      selector:
+        select:
+          options:
+            - label: "Exact (case-insensitive)"
+              value: "exact"
+            - label: "Exact (case-sensitive)"
+              value: "exact_case_sensitive"
+            - label: "Contains (case-insensitive substring)"
+              value: "contains"
+            - label: "Starts with"
+              value: "startswith"
+            - label: "Ends with"
+              value: "endswith"
+            - label: "Regular Expression"
+              value: "regex"
+    description:
+      name: Description Filter
+      description: Filter events whose description contains this text.
+      example: "cancelled"
+      selector:
+        text:
+    location:
+      name: Location Filter
+      description: Filter events whose location contains this text.
+      example: "Room B"
+      selector:
+        text:
+    start_date_time:
+      name: Start Datetime
+      description: Search window start time (defaults to 30 days ago).
+      selector:
+        datetime:
+    end_date_time:
+      name: End Datetime
+      description: Search window end time (defaults to 365 days ahead).
+      selector:
+        datetime:
+    start_date:
+      name: Start Date
+      description: Search window start date.
+      selector:
+        date:
+    end_date:
+      name: End Date
+      description: Search window end date.
+      selector:
+        date:
+    all_time:
+      name: Search All Time
+      description: Search the entire calendar timeline (1970 to 2099).
+      default: false
+      selector:
+        boolean:
+    limit:
+      name: Limit
+      description: Maximum number of events to delete.
+      selector:
+        number:
+          min: 1
+          max: 1000
+          mode: box
+    delete_all:
+      name: Delete All (Safety Override)
+      description: Must be set to true if deleting events without providing any filters.
+      default: false
+      selector:
+        boolean:
+    dry_run:
+      name: Dry Run
+      description: If enabled, returns the events that would be deleted without actually deleting them.
+      default: false
+      selector:
+        boolean:
+
+clear_calendar:
+  name: Clear Calendar
+  description: Bulk remove all events, past events, or future events from a local calendar.
+  target:
+    entity:
+      domain: calendar
+  fields:
+    confirm:
+      name: Confirm Action
+      description: Safety confirmation. Must be checked (true) to execute the deletion.
+      required: true
+      default: false
+      selector:
+        boolean:
+    start_date_time:
+      name: Start Datetime
+      description: Earliest event start to clear.
+      selector:
+        datetime:
+    end_date_time:
+      name: End Datetime
+      description: Latest event start to clear.
+      selector:
+        datetime:
+    start_date:
+      name: Start Date
+      description: Earliest date to clear.
+      selector:
+        date:
+    end_date:
+      name: End Date
+      description: Latest date to clear.
+      selector:
+        date:
+    only_past:
+      name: Clear Only Past Events
+      description: Clear only events that have already ended prior to now.
+      default: false
+      selector:
+        boolean:
+    only_future:
+      name: Clear Only Future Events
+      description: Clear only events that start in the future after now.
+      default: false
+      selector:
+        boolean:
+    dry_run:
+      name: Dry Run
+      description: If enabled, lists the events that would be cleared without modifying the calendar.
+      default: false
+      selector:
+        boolean:
