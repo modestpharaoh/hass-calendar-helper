@@ -1,9 +1,13 @@
 {
   "domain": "calendar_helper",
   "name": "Calendar Helper",
-  "codeowners": ["@modestpharaoh"],
+  "codeowners": [
+    "@modestpharaoh"
+  ],
   "config_flow": true,
-  "dependencies": ["calendar"],
+  "dependencies": [
+    "calendar"
+  ],
   "documentation": "https://github.com/modestpharaoh/hass-calendar-helper",
   "integration_type": "helper",
   "iot_class": "calculated",
