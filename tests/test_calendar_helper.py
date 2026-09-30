@@ -96,6 +96,10 @@ if "homeassistant" not in sys.modules:
         import voluptuous as vol
         full = {**schema, vol.Optional("entity_id"): vol.Any(str, list)}
         return vol.Schema(full)
+    def empty_config_schema(domain):
+        import voluptuous as vol
+        return vol.Schema({domain: {}})
+    ha_cv.empty_config_schema = empty_config_schema
     ha_cv.has_at_least_one_key = has_at_least_one_key
     ha_cv.make_entity_service_schema = make_entity_service_schema
     sys.modules["homeassistant.helpers"] = types.ModuleType("homeassistant.helpers")

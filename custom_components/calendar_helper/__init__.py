@@ -77,6 +77,8 @@ from .const import (
     VALID_MATCH_MODES,
 )
 
+CONFIG_SCHEMA = cv.empty_config_schema(DOMAIN)
+
 _LOGGER = logging.getLogger(__name__)
 
 # Schema for deleting a single calendar event
