@@ -1,0 +1,151 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version / code (e.g. 1.0.0 or v1.0.0)"
+        required: true
+        type: string
+      prerelease:
+        description: "Mark as pre-release"
+        required: false
+        type: boolean
+        default: false
+  push:
+    tags:
+      - "v*"
+      - "[0-9]+.[0-9]+.[0-9]+*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-asyncio voluptuous pillow
+
+      - name: Run unit tests
+        run: |
+          pytest tests/
+
+      - name: Run Hassfest
+        uses: home-assistant/actions/hassfest@master
+
+      - name: Run HACS validation
+        uses: hacs/action@main
+        with:
+          category: "integration"
+
+  release:
+    name: Publish Release & Tag
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine Version and Tag
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            RAW="${{ inputs.version }}"
+            IS_PRERELEASE="${{ inputs.prerelease }}"
+          else
+            RAW="${{ github.ref_name }}"
+            IS_PRERELEASE="false"
+          fi
+
+          # Strip leading 'v' if present for clean semver
+          VERSION="${RAW#v}"
+          TAG="v${VERSION}"
+
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "prerelease=${IS_PRERELEASE}" >> "$GITHUB_OUTPUT"
+          echo "Target tag: ${TAG} (version: ${VERSION})"
+
+      - name: Update manifest.json version (if needed)
+        id: manifest
+        run: |
+          VERSION="${{ steps.vars.outputs.version }}"
+          MANIFEST="custom_components/calendar_helper/manifest.json"
+
+          # Update version field in manifest.json using jq
+          jq --arg v "$VERSION" '.version = $v' "$MANIFEST" > "${MANIFEST}.tmp" && mv "${MANIFEST}.tmp" "$MANIFEST"
+
+          # Check if there are changes to commit
+          if ! git diff --quiet "$MANIFEST"; then
+            echo "manifest_changed=true" >> "$GITHUB_OUTPUT"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add "$MANIFEST"
+            git commit -m "chore(release): bump version to ${VERSION}"
+            git push origin HEAD:main
+          else
+            echo "manifest_changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create and push Git Tag
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+          git fetch origin
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists."
+          else
+            echo "Creating tag $TAG..."
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "Release ${TAG}"
+            git push origin "$TAG"
+          fi
+
+      - name: Package Integration Zip
+        run: |
+          cd custom_components
+          zip -r ../calendar_helper.zip calendar_helper
+          cd ..
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.vars.outputs.tag }}"
+          PRERELEASE="${{ steps.vars.outputs.prerelease }}"
+
+          OPTS=()
+          if [ "$PRERELEASE" = "true" ]; then
+            OPTS+=("--prerelease")
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG exists, uploading latest calendar_helper.zip asset..."
+            gh release upload "$TAG" calendar_helper.zip --clobber
+          else
+            echo "Creating new GitHub Release $TAG..."
+            gh release create "$TAG" calendar_helper.zip \
+              --title "Release ${TAG}" \
+              --generate-notes \
+              "${OPTS[@]}"
+          fi
